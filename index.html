@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinPal - Твой Личный Финансовый Помощник</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+        }
+        
+        header {
+            background: #35424a;
+            color: #ffffff;
+            padding: 30px 0;
+            text-align: center;
+        }
+        
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: #eaeaea;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            margin-right: 5px;
+        }
+        
+        .tab.active {
+            background: #ffffff;
+            font-weight: bold;
+        }
+        
+        .content {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        
+        .content.active {
+            display: block;
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: #35424a;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #444d56;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            background: #35424a;
+            color: #ffffff;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>FinPal</h1>
+            <p>Твой Личный Финансовый Помощник</p>
+        </header>
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('card')">Ваша карта</div>
+            <div class="tab" onclick="showTab('transactions')">Последние транзакции</div>
+            <div class="tab" onclick="showTab('analytics')">Аналитика расходов</div>
+        </div>
+
+        <div id="card" class="content active">
+            <h2>Ваша карта</h2>
+            <div class="card">
+                <h3>UltraCard</h3>
+                <p>Номер карты: <span id="card-number">1234 5678 9012 3456</span></p>
+                <p>Баланс: <span id="balance">10000 ₽</span></p>
+                <div class="controls">
+                    <button onclick="makePayment()">Оплатить</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="transactions" class="content">
+            <h2>Последние транзакции</h2>
+            <ul id="transaction-list">
+                <li>Покупка в магазине - 500 ₽</li>
+                <li>Перевод на счет друга - 2000 ₽</li>
+                <li>Оплата подписки - 300 ₽</li>
+            </ul>
+            <div class="controls">
+                <button onclick="addTransaction()">Добавить транзакцию</button>
+            </div>
+        </div>
+
+        <div id="analytics" class="content">
+            <h2>Аналитика расходов</h2>
+            <p>Здесь будет график аналитики расходов.</p>
+            <p>Текущая сумма расходов: <span id="expenses">0 ₽</span></p>
+            <div class="controls">
+                <button onclick="showAnalytics()">Показать расходы</button>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2023 FinPal. Все права защищены.</p>
+        </footer>
+    </div>
+
+    <script>
+        const cardOptions = [
+            { number: '1234 5678 9012 3456', category: 'Счет в банке' },
+            { number: '2345 6789 0123 4567', category: 'Счет жены' },
+            { number: '3456 7890 1234 5678', category: 'Счет друга' }
+        ];
+
+        const phoneOptions = [
+            '79990001122',
+            '79992223344',
+            '79993334455'
+        ];
+
+        const paymentAmounts = [100, 200, 500, 1000, 2000, 5000]; // Предопределенные суммы для оплаты
+
+        function showTab(tabId) {
+            const contents = document.querySelectorAll('.content');
+            const tabs = document.querySelectorAll('.tab');
+
+            contents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            document.getElementById(tabId).classList.add('active');
+            const activeTab = Array.from(tabs).find(tab => tab.textContent === tabId);
+            activeTab.classList.add('active');
+        }
+
+        function addTransaction() {
+            const transactionList = document.getElementById('transaction-list');
+            const newTransaction = prompt("Введите описание транзакции и сумму (например, 'Покупка - 300 ₽):");
+
+            if (newTransaction) {
+                const newListItem = document.createElement('li');
+                newListItem.textContent = newTransaction;
+                transactionList.appendChild(newListItem);
+
+                // Обновление баланса
+                const balanceElement = document.getElementById('balance');
+                const currentBalance = parseInt(balanceElement.textContent.replace(' ₽', ''));
+
+                const amountMatch = newTransaction.match(/-?\s*(\d+)\s*₽/);
+                const amount = amountMatch ? parseInt(amountMatch[1]) : 0;
+                balanceElement.textContent = (currentBalance - amount) + ' ₽';
+            }
+        }
+
+        function showAnalytics() {
+            const expensesElement = document.getElementById('expenses');
+            const transactionItems = document.getElementById('transaction-list').getElementsByTagName('li');
+            let totalExpenses = 0;
+
+            for (let item of transactionItems) {
+                const amountMatch = item.textContent.match(/-?\s*(\d+)\s*₽/);
+                if (amountMatch) {
+                    totalExpenses += parseInt(amountMatch[1]);
+                }
+            }
+
+            expensesElement.textContent = totalExpenses + ' ₽';
+            alert(`Общие расходы: ${totalExpenses} ₽`);
+        }
+
+        function makePayment() {
+            const paymentType = prompt("Введите тип оплаты (номер карты/номер телефона):").toLowerCase();
+            let cardNumber, phoneNumber;
+            let amount;
+
+            if (paymentType.includes('карта')) {
+                const options = cardOptions.map(option => `${option.number} (${option.category})`).join('\n');
+                cardNumber = prompt(`Выберите номер карты:\n${options}`);
+
+                if (cardOptions.some(option => option.number === cardNumber)) {
+                    const amountOptions = paymentAmounts.join('\n');
+                    amount = prompt(`Выберите сумму для оплаты:\n${amountOptions} \nВведите сумму:`);
+
+                    const balanceElement = document.getElementById('balance');
+                    const currentBalance = parseInt(balanceElement.textContent.replace(' ₽', ''));
+
+                    if (paymentAmounts.includes(parseInt(amount))) {
+                        if (parseInt(amount) > currentBalance) {
+                            alert("Недостаточно средств на счете для выполнения этой операции.");
+                        } else {
+                            alert(`Оплата ${amount}₽ по карте ${cardNumber} успешно выполнена.`);
+                            updateBalance(amount);
+                            alert("Спасибо за оплату!"); // Уведомление
+                        }
+                    } else {
+                        alert("Неверная сумма, пожалуйста, выберите из списка.");
+                    }
+                } else {
+                    alert("Неверный номер карты.");
+                }
+            } else if (paymentType.includes('телефон')) {
+                const options = phoneOptions.join('\n');
+                phoneNumber = prompt(`Выберите номер телефона:\n${options}`);
+
+                if (phoneOptions.includes(phoneNumber)) {
+                    const amountOptions = paymentAmounts.join('\n');
+                    amount = prompt(`Выберите сумму для оплаты:\n${amountOptions} \nВведите сумму:`);
+
+                    const balanceElement = document.getElementById('balance');
+                    const currentBalance = parseInt(balanceElement.textContent.replace(' ₽', ''));
+
+                    if (paymentAmounts.includes(parseInt(amount))) {
+                        if (parseInt(amount) > currentBalance) {
+                            alert("Недостаточно средств на счете для выполнения этой операции.");
+                        } else {
+                            alert(`Оплата ${amount}₽ по номеру телефона ${phoneNumber} успешно выполнена.`);
+                            updateBalance(amount);
+                            alert("Спасибо за оплату!"); // Уведомление
+                        }
+                    } else {
+                        alert("Неверная сумма, пожалуйста, выберите из списка.");
+                    }
+                } else {
+                    alert("Неверный номер телефона.");
+                }
+            } else {
+                alert("Неизвестный тип оплаты! Пожалуйста, введите либо 'номер карты', либо 'номер телефона'.");
+            }
+        }
+
+        function updateBalance(amount) {
+            const balanceElement = document.getElementById('balance');
+            const currentBalance = parseInt(balanceElement.textContent.replace(' ₽', ''));
+            balanceElement.textContent = (currentBalance - parseInt(amount)) + ' ₽';
+        }
+    </script>
+</body>
+</html>
